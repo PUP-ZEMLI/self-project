@@ -1,0 +1,1 @@
+Built-in image_gen extraction: preserve only the original large central crystal at the same size, orientation and position on a transparent 1280px square canvas. Remove all four satellite shards and all orbit lines; reconstruct the facets beneath them.

@@ -1,0 +1,1 @@
+Built-in image_gen material replacement: Transform process-mountain.png into translucent neon lime crystalline glass, preserving the mountain silhouette, peak locations, broad base, camera, canvas and transparent background. No separate wedges or new objects.

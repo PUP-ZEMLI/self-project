@@ -1,0 +1,1 @@
+Built-in image_gen: Faithfully reconstruct only the central elongated asymmetrical lime glass crystal from the supplied reference, matching its silhouette, inclination, facets, thin elliptical orbit and four surrounding shards. Transparent background. Exclude text, mountains and dotted connections.
