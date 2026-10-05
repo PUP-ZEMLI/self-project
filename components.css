@@ -339,7 +339,9 @@ h1,h2,h3{font-family:var(--heading);font-weight:700;letter-spacing:.015em}
 .fragment-one{right:-55%;top:-67%;transform:rotate(15deg)}
 .fragment-two{left:20%;bottom:-18%;transform:rotate(-25deg);width:13%}
 .why-reference .benefit-paths{z-index:0}
-.why-reference .benefits .benefit::after{content:'';inset:10%;padding:0;background:#9bef26;filter:blur(2.5rem) saturate(.9);z-index:-1}
+.why-reference .benefits .benefit::after{display:none}
+.why-reference .benefits .benefit :is(.benefit-number,.benefit-label,.benefit-summary){transition:text-shadow 1.2s ease,color 1.2s ease}
+.why-reference .benefits .benefit:is(:hover,:focus-visible) :is(.benefit-number,.benefit-label,.benefit-summary){text-shadow:0 0 1.25rem rgba(155,239,38,.62)}
 .why-reference .has-selection .benefit-summary{font-size:.75rem}
 .why-reference .has-selection .benefit-label{font-size:1rem}
 .why-reference .has-selection .portrait{width:27%;top:50%}
@@ -452,12 +454,16 @@ h1,h2,h3{font-family:var(--heading);font-weight:700;letter-spacing:.015em}
 .case-dialog[data-project="oldschool"] .case-full-image{display:none}
 .oldschool-track{position:relative;padding:0 16px;background:#151512}
 .oldschool-track[hidden]{display:none}
-.oldschool-stage{position:sticky;top:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;overflow:hidden}
+.oldschool-stage{position:sticky;top:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;overflow:hidden}
 .oldschool-column{min-width:0;height:100%;overflow:hidden;border-left:1px solid #ffffff18;border-right:1px solid #ffffff18}
 .oldschool-slice{overflow:hidden;will-change:transform}
 .oldschool-slice img{display:block;width:100%;max-width:none;height:auto;will-change:transform}
-@media(max-width:760px){.oldschool-track{padding:0 4px}.oldschool-stage{gap:5px}}
-.oldschool-stage{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:760px){
+  .oldschool-track{padding:1rem .4rem;background:#0d0e0c}
+  .oldschool-stage.is-mobile{display:block;width:min(100%,20rem);margin:0 auto;border:.35rem solid #191a17;border-radius:2rem 2rem 1.25rem 1.25rem;background:#151512;box-shadow:0 1.2rem 2.8rem #0008}
+  .oldschool-stage.is-mobile::before{content:'';position:absolute;z-index:2;left:50%;top:.55rem;width:3.25rem;height:.3rem;transform:translateX(-50%);border-radius:999px;background:#33362f;pointer-events:none}
+  .oldschool-stage.is-mobile .oldschool-column{border:0}
+}
 /* Opening a case returns the underlying card to its resting appearance. */
 .portfolio-card.hover-reset .preview-window img{transform:translateY(0)!important;transition:transform .8s ease}
 .portfolio-card.hover-reset>h3::after,.portfolio-card.hover-reset .case-link::before{opacity:0}
@@ -491,13 +497,13 @@ h1,h2,h3{font-family:var(--heading);font-weight:700;letter-spacing:.015em}
 /* The mobile case toolbar reserves a stable lane for its action and close control. */
 @media(max-width:760px){
   .case-dialog{width:calc(100vw - 1rem);height:calc(100dvh - 1rem);max-height:calc(100dvh - 1rem);margin:auto}
-  .case-dialog-toolbar{position:relative;display:block;min-height:7.6rem;padding:1rem 7.7rem .9rem 1rem;overflow:hidden}
-  .case-dialog-toolbar>div:first-child{min-width:0}
+  .case-dialog-toolbar{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;min-height:7.2rem;padding:1rem;overflow:visible}
+  .case-dialog-toolbar>div:first-child{min-width:0;padding-right:.35rem}
   .case-dialog-category{display:block;max-width:100%;font-size:.72rem;line-height:1.45;overflow-wrap:anywhere}
   .case-dialog h3{margin-top:.7rem;font-size:1.5rem;line-height:1.1;white-space:normal}
-  .case-dialog-controls{position:absolute;right:.7rem;top:.75rem;display:grid;grid-template-columns:3.6rem 2.8rem;align-items:start;gap:.45rem}
-  .case-live-link{max-width:none;font-size:.75rem;line-height:1.15;text-align:left}
-  .case-close{width:2.8rem;height:2.8rem;font-size:1.65rem}
+  .case-dialog-controls{position:static;display:flex;align-items:flex-start;justify-content:flex-end;gap:.6rem}
+  .case-live-link{width:3.8rem;max-width:none;padding-top:.25rem;font-size:.72rem;line-height:1.15;text-align:left}
+  .case-close{flex:0 0 2.8rem;width:2.8rem;height:2.8rem;margin:0;padding:0;font-size:1.65rem;line-height:1;transform:none!important}
   .case-dialog-scroll{width:100%;min-height:0}
 }
 /* The laptop shares the case cards' wheel-like scroll rhythm. */
@@ -552,6 +558,7 @@ header{background:linear-gradient(170deg,#343734 0%,#161816 22%,#080908 49%,#202
   .header-inner nav a.touch-shadow-expired::before,
   .price-action.touch-shadow-expired::before,
   .price-bottom-cta a.touch-shadow-expired::before{opacity:0!important}
+  .why-reference .benefit.touch-shadow-expired :is(.benefit-number,.benefit-label,.benefit-summary){text-shadow:none!important}
 }
 @media(prefers-reduced-motion:reduce){.header-inner .brand::before{transition:none}}
 

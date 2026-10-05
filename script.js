@@ -454,7 +454,7 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   reduced.addEventListener('change',updateCaption);
 })();
 
-// Old School: two consecutive slices with one shared, native scroll timeline.
+// Old School: paired desktop slices and one phone-shaped mobile viewport.
 (() => {
   const scroller = caseDialog.querySelector('.case-dialog-scroll');
   const track = document.createElement('div');
@@ -479,6 +479,7 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   track.append(stage);
   scroller.append(track);
   const split = .61;
+  const mobile = matchMedia('(max-width: 760px)');
   let segmentHeights = [0,0], travelByColumn = [0,0];
   function paint() {
     if (track.hidden) return;
@@ -490,7 +491,28 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   }
   function layout() {
     if (track.hidden || !columns[0].image.naturalWidth) return;
+    const mobileLayout = mobile.matches;
+    stage.classList.toggle('is-mobile',mobileLayout);
+    columns[0].column.hidden = false;
+    columns[1].column.hidden = mobileLayout;
+    columns[0].column.setAttribute('aria-label',mobileLayout ? 'Мобильный макет Old School' : 'Часть 1 из 2');
+    columns[1].column.setAttribute('aria-label','Часть 2 из 2');
+    columns.forEach(({slice,image}) => {
+      slice.style.transform = '';
+      slice.style.height = '';
+      image.style.transform = '';
+    });
     const fullHeight = columns[0].column.clientWidth * columns[0].image.naturalHeight / columns[0].image.naturalWidth;
+    if (mobileLayout) {
+      const height = Math.min(scroller.clientHeight,Math.max(320,Math.min(620,columns[0].column.clientWidth*1.82)));
+      segmentHeights = [fullHeight,0];
+      travelByColumn = [Math.max(0,fullHeight-height),0];
+      stage.style.height = `${height}px`;
+      columns[0].slice.style.height = `${fullHeight}px`;
+      track.style.height = `${scroller.clientHeight+travelByColumn[0]}px`;
+      paint();
+      return;
+    }
     segmentHeights = [fullHeight*split,fullHeight*(1-split)];
     const height = Math.min(scroller.clientHeight,Math.max(140,Math.min(...segmentHeights)*.78));
     travelByColumn = segmentHeights.map(segmentHeight => Math.max(0,segmentHeight-height));
@@ -509,6 +531,7 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   };
   new MutationObserver(sync).observe(caseDialog,{attributes:true,attributeFilter:['data-project','open']});
   new ResizeObserver(layout).observe(scroller);
+  mobile.addEventListener('change',layout);
   columns.forEach(({image}) => image.addEventListener('load',layout));
   scroller.addEventListener('scroll',paint,{passive:true});
 })();
