@@ -478,6 +478,28 @@ h1,h2,h3{font-family:var(--heading);font-weight:700;letter-spacing:.015em}
 .case-dialog[open]::backdrop{animation:none;background-color:#0000;backdrop-filter:blur(7px);opacity:0;transition:opacity .75s ease,background-color .75s ease}
 .case-dialog[open].is-visible::backdrop{background-color:#000d;opacity:1}
 @media(prefers-reduced-motion:reduce){.case-dialog[open],.case-dialog[open]::backdrop{transition:none;transform:none}}
+
+/* Compact mobile process: keep the selected stage readable without a tall dotted loop. */
+@media(max-width:760px){
+  .steps.is-expanded{height:31rem;min-height:31rem}
+  .steps.is-expanded .process-paths{display:none}
+  .steps.is-expanded>.step:not([aria-expanded="true"]){opacity:0;visibility:hidden;pointer-events:none}
+  .steps.is-expanded>.step[aria-expanded="true"]{left:4%;top:3%;max-width:78%}
+  .steps.is-expanded .process-detail{left:8%;top:56%;width:84%;padding:1rem .75rem .75rem}
+}
+
+/* The mobile case toolbar reserves a stable lane for its action and close control. */
+@media(max-width:760px){
+  .case-dialog{width:calc(100vw - 1rem);height:calc(100dvh - 1rem);max-height:calc(100dvh - 1rem);margin:auto}
+  .case-dialog-toolbar{position:relative;display:block;min-height:7.6rem;padding:1rem 7.7rem .9rem 1rem;overflow:hidden}
+  .case-dialog-toolbar>div:first-child{min-width:0}
+  .case-dialog-category{display:block;max-width:100%;font-size:.72rem;line-height:1.45;overflow-wrap:anywhere}
+  .case-dialog h3{margin-top:.7rem;font-size:1.5rem;line-height:1.1;white-space:normal}
+  .case-dialog-controls{position:absolute;right:.7rem;top:.75rem;display:grid;grid-template-columns:3.6rem 2.8rem;align-items:start;gap:.45rem}
+  .case-live-link{max-width:none;font-size:.75rem;line-height:1.15;text-align:left}
+  .case-close{width:2.8rem;height:2.8rem;font-size:1.65rem}
+  .case-dialog-scroll{width:100%;min-height:0}
+}
 /* The laptop shares the case cards' wheel-like scroll rhythm. */
 .hero-composition .laptop-screen .laptop-page{animation:none;transition:transform .48s cubic-bezier(.16,.75,.25,1)}
 .header-inner .brand{position:relative;isolation:isolate}
