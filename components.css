@@ -533,6 +533,26 @@ header{background:linear-gradient(170deg,#343734 0%,#161816 22%,#080908 49%,#202
 .header-inner .brand:focus-visible::before{clip-path:inset(0)}
 .header-inner nav a::before{filter:blur(1.2rem) saturate(1.15)}
 .header-inner nav a:is(:hover,:focus-visible)::before{opacity:.7}
+
+/* Touch taps may leave :hover active on mobile browsers. Expire only the glow;
+   pointer hover on desktop keeps the original behavior until mouseleave. */
+@media (hover:none), (pointer:coarse){
+  .hero-composition.touch-shadow-expired .composition-glow,
+  .hero-principle.touch-shadow-expired .principle-number::after,
+  .benefit.touch-shadow-expired::after,
+  .step.touch-shadow-expired::after,
+  .process-stone.touch-shadow-expired::after,
+  .benefit-crystal.touch-shadow-expired::after,
+  .benefit-core.touch-shadow-expired::before,
+  .portfolio-card.touch-shadow-expired>h3::after,
+  .portfolio-card.touch-shadow-expired .case-link::before,
+  .contact-card.touch-shadow-expired::before,
+  .footer-pill.touch-shadow-expired::before,
+  .footer-navigation a.touch-shadow-expired::before,
+  .header-inner nav a.touch-shadow-expired::before,
+  .price-action.touch-shadow-expired::before,
+  .price-bottom-cta a.touch-shadow-expired::before{opacity:0!important}
+}
 @media(prefers-reduced-motion:reduce){.header-inner .brand::before{transition:none}}
 
 /* Compact header and a tighter start to the first screen. */

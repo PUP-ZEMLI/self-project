@@ -570,3 +570,39 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   if (document.fonts?.ready) document.fonts.ready.then(sync);
   sync();
 })();
+
+// Mobile browsers can keep :hover after a tap. Let the approved glow appear,
+// then clear it after a short pause; mouse hover remains controlled by CSS.
+(() => {
+  const selector = [
+    '.hero-composition',
+    '.hero-principle',
+    '.benefit',
+    '.step',
+    '.process-stone',
+    '.benefit-crystal',
+    '.benefit-core',
+    '.portfolio-card',
+    '.contact-card',
+    '.footer-pill',
+    '.footer-navigation a',
+    '.header-inner nav a',
+    '.price-action',
+    '.price-bottom-cta a'
+  ].join(',');
+  const timers = new WeakMap();
+
+  document.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse') return;
+    const target = event.target.closest(selector);
+    if (!target) return;
+    const previous = timers.get(target);
+    if (previous) clearTimeout(previous);
+    target.classList.remove('touch-shadow-expired');
+    timers.set(target,setTimeout(() => {
+      target.classList.add('touch-shadow-expired');
+      if (target instanceof HTMLElement) target.blur();
+      timers.delete(target);
+    },2000));
+  },{passive:true});
+})();
