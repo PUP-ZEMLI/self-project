@@ -2,6 +2,7 @@ const SITE_MOTION_RATE = 1.5;
 const motionTime = milliseconds => milliseconds / SITE_MOTION_RATE;
 
 function accelerateCssMotion(event) {
+  if (event.target.classList?.contains('touch-glow')) return;
   if (event.target.closest?.('#contacts')) return;
   event.target.getAnimations().forEach(animation => { animation.playbackRate = SITE_MOTION_RATE; });
 }
@@ -491,7 +492,7 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   }
   function layout() {
     if (track.hidden || !columns[0].image.naturalWidth) return;
-    const mobileLayout = mobile.matches;
+    const mobileLayout = mobile.matches || scroller.clientWidth <= 760;
     stage.classList.toggle('is-mobile',mobileLayout);
     columns[0].column.hidden = false;
     columns[1].column.hidden = mobileLayout;
@@ -504,13 +505,10 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
     });
     const fullHeight = columns[0].column.clientWidth * columns[0].image.naturalHeight / columns[0].image.naturalWidth;
     if (mobileLayout) {
-      const height = Math.min(scroller.clientHeight,Math.max(320,Math.min(620,columns[0].column.clientWidth*1.82)));
       segmentHeights = [fullHeight,0];
-      travelByColumn = [Math.max(0,fullHeight-height),0];
-      stage.style.height = `${height}px`;
-      columns[0].slice.style.height = `${fullHeight}px`;
-      track.style.height = `${scroller.clientHeight+travelByColumn[0]}px`;
-      paint();
+      travelByColumn = [0,0];
+      stage.style.height = 'auto';
+      track.style.height = 'auto';
       return;
     }
     segmentHeights = [fullHeight*split,fullHeight*(1-split)];
@@ -594,18 +592,20 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   sync();
 })();
 
-// Mobile browsers can keep :hover after a tap. Let the approved glow appear,
-// then clear it after a short pause; mouse hover remains controlled by CSS.
+// Touch glow is a pre-blurred bitmap: only opacity changes during a tap.
+// This avoids Safari recompositing a stroked/filter layer into a sharp outline.
 (() => {
   const selector = [
     '.hero-composition',
+    '.hero .pill',
     '.hero-principle',
     '.benefit',
     '.step',
     '.process-stone',
     '.benefit-crystal',
     '.benefit-core',
-    '.portfolio-card',
+    '.portfolio-card h3',
+    '.case-link',
     '.contact-card',
     '.footer-pill',
     '.footer-navigation a',
@@ -613,19 +613,97 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
     '.price-action',
     '.price-bottom-cta a'
   ].join(',');
-  const timers = new WeakMap();
+  const root = document.documentElement;
+  const layers = new WeakMap();
+  let active, timer;
+  if (matchMedia('(hover:none), (pointer:coarse)').matches) root.classList.add('touch-input');
 
+  function makeGlow(target) {
+    const bounds = target.getBoundingClientRect();
+    const pad = Math.max(32, Math.min(90, bounds.width * .22));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(bounds.width + pad * 2);
+    canvas.height = Math.ceil(bounds.height + pad * 2);
+    const ctx = canvas.getContext('2d');
+    ctx.translate(pad, pad);
+    ctx.fillStyle = '#9bef26';
+    ctx.strokeStyle = '#9bef26';
+    const rounded = target.matches('.pill,.case-link,.contact-card,.footer-pill,.price-action,.price-bottom-cta a');
+    if (rounded) {
+      ctx.lineWidth = Math.max(5, bounds.width * .04);
+      ctx.beginPath();
+      ctx.roundRect(0, 0, bounds.width, bounds.height, Math.min(bounds.height / 2, parseFloat(getComputedStyle(target).borderRadius) || 12));
+      ctx.stroke();
+    } else if (target.matches('.hero-composition')) {
+      ctx.save();
+      ctx.scale(bounds.width / 1254, bounds.height / 1254);
+      ctx.lineWidth = 100;
+      ctx.lineJoin = 'round';
+      target.querySelectorAll('.composition-glow path').forEach(path => ctx.stroke(new Path2D(path.getAttribute('d'))));
+      ctx.restore();
+    } else if (target.matches('.benefit-core,.benefit-crystal,.process-stone')) {
+      const image = target.querySelector('.core-main') || target.querySelector('img');
+      if (image?.complete && image.naturalWidth) {
+        const rect = image.getBoundingClientRect();
+        ctx.drawImage(image, rect.left-bounds.left, rect.top-bounds.top, rect.width, rect.height);
+        ctx.globalCompositeOperation = 'source-in';
+        ctx.fillRect(-pad,-pad,canvas.width,canvas.height);
+      }
+    } else {
+      const source = target.matches('.hero-principle') ? target.querySelector('.principle-number') : target;
+      const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (!node.textContent.trim()) continue;
+        const style = getComputedStyle(node.parentElement);
+        ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        ctx.textBaseline = 'top';
+        for (let i=0; i<node.length; i++) {
+          const range = document.createRange();
+          range.setStart(node,i); range.setEnd(node,i+1);
+          const rect = range.getBoundingClientRect();
+          if (!rect.width || !rect.height) continue;
+          const char = style.textTransform === 'uppercase' ? node.textContent[i].toUpperCase() : node.textContent[i];
+          ctx.fillText(char,rect.left-bounds.left,rect.top-bounds.top);
+        }
+      }
+    }
+    const blurred = document.createElement('canvas');
+    blurred.width = canvas.width; blurred.height = canvas.height;
+    const blur = blurred.getContext('2d');
+    // Draw the source outside the bitmap; retain only its soft shadow.
+    blur.shadowColor = '#9bef26';
+    blur.shadowBlur = target.matches('.hero-composition') ? bounds.width * 190/1254 : pad * .8;
+    blur.shadowOffsetX = canvas.width * 2;
+    blur.drawImage(canvas,-canvas.width*2,0);
+    const layer = blurred;
+    layer.className = 'touch-glow'; layer.setAttribute('aria-hidden','true');
+    layer.style.cssText = `left:${-pad}px;top:${-pad}px;width:${canvas.width}px;height:${canvas.height}px`;
+    if (getComputedStyle(target).position === 'static') target.style.position = 'relative';
+    target.append(layer);
+    layers.set(target,layer);
+    return layer;
+  }
+  function clear() {
+    clearTimeout(timer);
+    active?.classList.remove('is-lit');
+    active = null;
+  }
   document.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'mouse') return;
+    if (event.pointerType === 'mouse') { clear(); root.classList.remove('touch-input'); return; }
+    root.classList.add('touch-input');
+    clear();
     const target = event.target.closest(selector);
     if (!target) return;
-    const previous = timers.get(target);
-    if (previous) clearTimeout(previous);
-    target.classList.remove('touch-shadow-expired');
-    timers.set(target,setTimeout(() => {
-      target.classList.add('touch-shadow-expired');
-      if (target instanceof HTMLElement) target.blur();
-      timers.delete(target);
-    },2000));
+    const layer = layers.get(target) || makeGlow(target);
+    active = layer;
+    requestAnimationFrame(() => { if (active === layer) layer.classList.add('is-lit'); });
+    timer = setTimeout(clear,2000);
   },{passive:true});
+  document.addEventListener('pointercancel',clear,{passive:true});
+  window.addEventListener('pagehide',clear);
+  window.addEventListener('resize',() => {
+    clear();
+    document.querySelectorAll('.touch-glow').forEach(layer => { layers.delete(layer.parentElement); layer.remove(); });
+  });
 })();
