@@ -631,6 +631,7 @@ html.touch-input .hero-composition .composition-glow,
 html.touch-input .hero .pill::before,
 html.touch-input .hero-principle .principle-number::after,
 html.touch-input .benefit::after,
+html.touch-input .process-detail::before,
 html.touch-input .step::after,
 html.touch-input .process-stone::after,
 html.touch-input .benefit-crystal::after,
@@ -649,3 +650,11 @@ body .touch-glow{position:absolute;z-index:2;display:block;max-width:none;pointe
 body .touch-glow.is-lit{opacity:.45}
 html:not(.touch-input) .touch-glow{display:none}
 @media(prefers-reduced-motion:reduce){body .touch-glow{transition:none}}
+/* Prevent iOS from independently inflating text in the narrow benefit columns. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:760px){
+  .why-reference .benefit-number{font-size:25px;line-height:1}
+  .why-reference .benefit-label{font-size:14px;line-height:1.3}
+  .why-reference .benefit-summary{font-size:14px;line-height:1.5}
+}
+body .process-detail>.touch-glow{z-index:-1}

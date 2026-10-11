@@ -689,9 +689,43 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
     active?.classList.remove('is-lit');
     active = null;
   }
+  // The revealed description keeps one pre-rendered halo throughout typing.
+  // Its reserved text fixes the size, so no live CSS blur is recomposited.
+  function updateProcessGlow() {
+    if (!root.classList.contains('touch-input') || processPanel.hidden) return;
+    const bounds = processPanel.getBoundingClientRect();
+    const previous = layers.get(processPanel);
+    const key = `${Math.round(bounds.width)}x${Math.round(bounds.height)}`;
+    if (previous?.dataset.size === key) return;
+    previous?.remove();
+    const pad = 70;
+    const layer = document.createElement('canvas');
+    layer.width = Math.ceil(bounds.width + pad * 2);
+    layer.height = Math.ceil(bounds.height + pad * 2);
+    const ctx = layer.getContext('2d');
+    ctx.save();
+    ctx.translate(layer.width / 2, layer.height / 2);
+    ctx.scale(layer.width / 2, layer.height / 2);
+    const gradient = ctx.createRadialGradient(0,0,0,0,0,1);
+    gradient.addColorStop(0,'#9bef2699');
+    gradient.addColorStop(.4,'#9bef2648');
+    gradient.addColorStop(1,'#9bef2600');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(-1,-1,2,2);
+    ctx.restore();
+    layer.className = 'touch-glow is-lit';
+    layer.dataset.size = key;
+    layer.setAttribute('aria-hidden','true');
+    layer.style.cssText = `left:${-pad}px;top:${-pad}px;width:${layer.width}px;height:${layer.height}px`;
+    processPanel.append(layer);
+    layers.set(processPanel,layer);
+  }
+  new ResizeObserver(updateProcessGlow).observe(processPanel);
+  new MutationObserver(updateProcessGlow).observe(processPanel,{attributes:true,attributeFilter:['hidden']});
   document.addEventListener('pointerdown', event => {
     if (event.pointerType === 'mouse') { clear(); root.classList.remove('touch-input'); return; }
     root.classList.add('touch-input');
+    requestAnimationFrame(updateProcessGlow);
     clear();
     const target = event.target.closest(selector);
     if (!target) return;
@@ -705,5 +739,6 @@ document.querySelectorAll('.portfolio-card > h3').forEach(title => {
   window.addEventListener('resize',() => {
     clear();
     document.querySelectorAll('.touch-glow').forEach(layer => { layers.delete(layer.parentElement); layer.remove(); });
+    requestAnimationFrame(updateProcessGlow);
   });
 })();
