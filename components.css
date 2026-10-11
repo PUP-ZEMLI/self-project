@@ -653,6 +653,7 @@ html:not(.touch-input) .touch-glow{display:none}
 /* Prevent iOS from independently inflating text in the narrow benefit columns. */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media(max-width:760px){
+  .why-reference>h2{font-size:2.125rem;line-height:1.3;white-space:normal}
   .why-reference .benefit-number{font-size:25px;line-height:1}
   .why-reference .benefit-label{font-size:14px;line-height:1.3}
   .why-reference .benefit-summary{font-size:14px;line-height:1.5}
